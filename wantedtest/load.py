@@ -53,14 +53,18 @@ def import_company_list(company_list):
         db.session.commit()
         company = Company.query.filter(Company.name == company_data.get('name')).first()
         for key, value in company_data.items():
-            if value == '':
-                continue
-            key_opt = key.split('_')
-            if key_opt[0] == 'tag':
-                continue
-            if key_opt[0] == 'company':
-                import_localization(company.id, key_opt[1], value)
+            import_company_detail(company, key, value)
     pass
+
+
+def import_company_detail(company, key, value):
+    if value == '':
+        return
+    key_opt = key.split('_')
+    if key_opt[0] == 'tag':
+        import_attaching(company, value)
+    if key_opt[0] == 'company':
+        import_localization(company.id, key_opt[1], value)
 
 
 def import_localization(name_base_id, code, value):
@@ -69,6 +73,18 @@ def import_localization(name_base_id, code, value):
     db.session.add(localization)
     db.session.commit()
     return
+
+
+def import_attaching(company, tag_value_list):
+    if company.tag_list:
+        return
+    tag_value_list = tag_value_list.split('|')
+    for tag_value in tag_value_list:
+        localization = Localization.query.filter(Localization.value == tag_value).first()
+        tag = localization.name_base
+        attaching = Attaching(company_id=company.id, tag_id=tag.id)
+        db.session.add(attaching)
+    db.session.commit()
 
 
 def import_tag():
