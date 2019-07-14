@@ -10,10 +10,10 @@ def load_keys(sheet):
 
 def add_rows(sheet, model):
     keys = load_keys(sheet)
-    for row in range(sheet.nrows - 1):
+    for row in range(1, sheet.nrows):
         data = dict()
         for col, key in enumerate(keys):
-            data[key] = sheet.cell_value(row + 1, col)
+            data[key] = sheet.cell_value(row, col)
             if type(data[key]) is float:
                 data[key] = int(data[key])
         m = model(**data)
@@ -37,11 +37,10 @@ def load_company_list():
     keys = load_keys(sheet=sheet)
     company_list = list()
     for row in range(sheet.nrows - 1):
-        row_data = dict()
-        row_data['name'] = ''
+        row_data = dict(name='')
         for col, key in enumerate(keys):
             row_data[key] = sheet.cell_value(row + 1, col)
-            if row_data['name'] == '' and row_data[key] != '':
+            if row_data.get('name') == '' and row_data[key] != '':
                 row_data['name'] = row_data[key]
         company_list.append(row_data)
     return company_list
@@ -54,18 +53,14 @@ def import_company_list(company_list):
         db.session.commit()
         company = Company.query.filter(Company.name == company_data.get('name')).first()
         for key, value in company_data.items():
-            import_company_detail(company, key, value)
+            if value == '':
+                continue
+            key_opt = key.split('_')
+            if key_opt[0] == 'tag':
+                continue
+            if key_opt[0] == 'company':
+                import_localization(company.id, key_opt[1], value)
     pass
-
-
-def import_company_detail(company, key, value):
-    if value == '':
-        return
-    key_opt = key.split('_')
-    if key_opt[0] == 'company':
-        import_localization(company.id, key_opt[1], value)
-    elif key_opt[0] == 'tag':
-        pass
 
 
 def import_localization(name_base_id, code, value):
@@ -76,10 +71,29 @@ def import_localization(name_base_id, code, value):
     return
 
 
+def import_tag():
+    sheet = open_sheet('tag.xlsx', 'tag')
+    keys = load_keys(sheet)
+    for row in range(1, sheet.nrows):
+        tag = Tag()
+        for col, key in enumerate(keys):
+            name = sheet.cell_value(row, col)
+            if not tag.name:
+                tag = Tag(name=name)
+                db.session.add(tag)
+                db.session.commit()
+                tag = Tag.query.filter(Tag.name == name).first()
+            language = Language.query.filter(Language.code == key).first()
+            localization = Localization(name_base_id=tag.id, language_id=language.id, value=name)
+            db.session.add(localization)
+    db.session.commit()
+
+
 db.reflect()
 db.drop_all()
 db.create_all()
 import_language()
+import_tag()
 company_list = load_company_list()
 import_company_list(company_list)
 
