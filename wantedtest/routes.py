@@ -1,0 +1,2 @@
+from wantedtest import db
+
