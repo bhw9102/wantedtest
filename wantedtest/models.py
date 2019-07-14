@@ -13,7 +13,7 @@ class Language(db.Model):
 class NameBase(db.Model):
     __tablename__ = 'name_base'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(40), nullable=False)
     language = relationship('Language', secondary='localization')
 
 
@@ -49,5 +49,5 @@ class Localization(db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
     name_base = relationship(NameBase, backref=backref('localization', cascade='all, delete-orphan'))
     language = relationship(Language, backref=backref('localization', cascade='all, delete-orphan'))
-    value = db.Column(db.String(20), nullable=False)
+    value = db.Column(db.String(40), nullable=False)
 
