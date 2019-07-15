@@ -153,16 +153,21 @@ def import_tag():
                 db.session.add(tag)
                 db.session.commit()
                 tag = Tag.query.filter(Tag.name == name).first()
-            import_localization(tag, key, name)
+            import_localization(tag.id, key, name)
 
 
-db.reflect()
-db.drop_all()
-db.create_all()
-import_language()
-import_tag()
-company_list = load_company_list()
-import_company_list(company_list)
+def init_and_load():
+    """
+    db를 초기화하고, xlsx를 불러와 저장한다.
+    :return:
+    """
+    db.reflect()
+    db.drop_all()
+    db.create_all()
+    import_language()
+    import_tag()
+    company_list = load_company_list()
+    import_company_list(company_list)
 
 
 
