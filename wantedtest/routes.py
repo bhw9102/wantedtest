@@ -1,4 +1,5 @@
 from flask import request
+from flask import jsonify
 from wantedtest import app
 from wantedtest import db
 from wantedtest.models import Company, Tag, Localization
@@ -22,6 +23,8 @@ def company():
             if company:
                 company_list.append(company.spread())
     print('company list : ', company_list)
-    return 'test'
+    response = jsonify(company_list)
+    response.status_code = 200
+    return response
 
 
