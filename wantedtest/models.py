@@ -45,48 +45,25 @@ class Company(NameBase):
         return {**id, **company_name, **tag}
 
     def spread_company_name(self):
-        ko = Language.query.filter(Language.code == 'ko').first()
-        en = Language.query.filter(Language.code == 'en').first()
-        ja = Language.query.filter(Language.code == 'ja').first()
         spread_data = dict(company_ko='', company_en='', company_ja='')
-        company_ko = Localization.query \
-            .filter(Localization.name_base_id == self.id, Localization.language_id == ko.id).first()
-        if company_ko:
-            spread_data['company_ko'] = company_ko.value
-        company_en = Localization.query \
-            .filter(Localization.name_base_id == self.id, Localization.language_id == en.id).first()
-        if company_en:
-            spread_data['company_en'] = company_en.value
-        company_ja = Localization.query \
-            .filter(Localization.name_base_id == self.id, Localization.language_id == ja.id).first()
-        if company_ja:
-            spread_data['company_ja'] = company_ja.value
+        for language in Language.query.all():
+            company_localization = Localization.query\
+                .filter(Localization.name_base_id == self.id, Localization.language_id == language.id).first()
+            if company_localization:
+                spread_data['company_'+language.code] = company_localization.value
         return spread_data
 
     def spread_tag(self):
-        ko = Language.query.filter(Language.code == 'ko').first()
-        en = Language.query.filter(Language.code == 'en').first()
-        ja = Language.query.filter(Language.code == 'ja').first()
-        tag_ko_list = list()
-        tag_en_list = list()
-        tag_ja_list = list()
-        for tag in self.tag_list:
-            tag_ko = Localization.query.filter(Localization.name_base_id == tag.id,
-                                               Localization.language_id == ko.id).first()
-            if tag_ko:
-                tag_ko_list.append(tag_ko.value)
-            tag_en = Localization.query.filter(Localization.name_base_id == tag.id,
-                                               Localization.language_id == en.id).first()
-            if tag_en:
-                tag_en_list.append(tag_en.value)
-            tag_ja = Localization.query.filter(Localization.name_base_id == tag.id,
-                                               Localization.language_id == ja.id).first()
-            if tag_ja:
-                tag_ja_list.append(tag_ja.value)
-        tag_ko = '|'.join(tag_ko_list)
-        tag_en = '|'.join(tag_en_list)
-        tag_ja = '|'.join(tag_ja_list)
-        return dict(tag_ko=tag_ko, tag_en=tag_en, tag_ja=tag_ja)
+        tag_list_lang = dict()
+        spread_data = dict()
+        for language in Language.query.all():
+            tag_list_lang[language.code + '_list'] = list()
+            for tag in self.tag_list:
+                tag_localization = Localization.query\
+                    .filter(Localization.name_base_id == tag.id, Localization.language_id == language.id).first()
+                tag_list_lang[language.code + '_list'].append(tag_localization.value)
+            spread_data['tag_'+language.code] = '|'.join(tag_list_lang[language.code + '_list'])
+        return spread_data
 
 
 class Tag(NameBase):
