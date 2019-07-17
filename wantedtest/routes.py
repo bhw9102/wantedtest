@@ -30,7 +30,6 @@ def get_company():
                 company_list.append(company_by_name)
     for company in company_list:
         spread_company_list.append(company.spread())
-    print('company list : ', spread_company_list)
     response = jsonify(spread_company_list)
     response.status_code = 200
     return response
@@ -53,6 +52,15 @@ def filter_by_tag_name(name):
     for attached in tag.attached_list:
         company_list.append(attached.company)
     return company_list
+
+
+@app.route('/company', methods=['POST'])
+def post_company():
+    data = request.get_json()
+    print(data)
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 
