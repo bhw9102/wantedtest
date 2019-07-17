@@ -2,7 +2,7 @@ from flask import request
 from flask import jsonify
 from wantedtest import app
 from wantedtest import db
-from wantedtest.models import Company, Tag, Localization
+from wantedtest.models import Company, Tag, Localization, Language
 
 
 @app.route('/test')
@@ -57,10 +57,48 @@ def filter_by_tag_name(name):
 @app.route('/company', methods=['POST'])
 def post_company():
     data = request.get_json()
-    print(data)
-    response = jsonify(data)
-    response.status_code = 200
+    company_id = data.get('id')
+    combined_tag_list = list()
+    for language in Language.query.all():
+        combined_tag_list.append(data.get('tag_'+language.code))
+    if not company_id:
+        response = jsonify(dict(status_code=412))
+        response.status_code = 412
+        return response
+    company = Company.query.filter(Company.id == company_id).first()
+    if not company:
+        response = jsonify(dict(status_code=404))
+        response.status_code = 404
+        return response
+    for combined_tag in combined_tag_list:
+        tag_list = convert_tag_list(combined_tag)
+        if type(tag_list) is list:
+            company.tag_list = tag_list
+            db.session.commit()
+            response = jsonify(data)
+            response.status_code = 200
+            return response
+    response = jsonify(dict(status_code=404))
+    response.status_code = 404
     return response
+
+
+def convert_tag_list(combined_tag):
+    if combined_tag is None:
+        return False
+    if combined_tag is '':
+        return list()
+    tag_list = list()
+    tag_name_list = combined_tag.split('|')
+    for tag_name in tag_name_list:
+        localization = Localization.query.filter(Localization.value == tag_name).first()
+        if not localization:
+            return False
+        tag = Tag.query.filter(Tag.id == localization.name_base_id).first()
+        if not tag:
+            return False
+        tag_list.append(tag)
+    return tag_list
 
 
 

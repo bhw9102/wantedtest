@@ -170,4 +170,6 @@ def init_and_load():
     import_company_list(company_list)
 
 
+init_and_load()
+
 
