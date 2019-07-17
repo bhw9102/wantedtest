@@ -96,7 +96,7 @@ def post_company():
             response = jsonify(data)
             response.status_code = 200
             return response
-    response = jsonify(dict(status_code=404))
+    response = jsonify(dict(status_code=412))
     response.status_code = 404
     return response
 
