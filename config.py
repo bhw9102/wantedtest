@@ -4,7 +4,7 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SECRET_KEy = '816307c8243548874e7a17487da3e72a3af503e1739a37d9'
 
-USERNAME = 'hyun'
+USERNAME = 'coding'
 PASSWORD = '1233'
 
 DATABASE_NAME = 'wantedtest'
