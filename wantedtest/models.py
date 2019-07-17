@@ -39,9 +39,10 @@ class Company(NameBase):
         회사 정보를 펼친 데이터로 재구성한다.
         :return:
         """
+        id = dict(id=self.id)
         company_name = self.spread_company_name()
         tag = self.spread_tag()
-        return {**company_name, **tag}
+        return {**id, **company_name, **tag}
 
     def spread_company_name(self):
         ko = Language.query.filter(Language.code == 'ko').first()
