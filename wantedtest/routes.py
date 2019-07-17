@@ -40,7 +40,7 @@ def filter_by_company_name(name):
     localization_list = Localization.query.filter(Localization.value.contains(name)).all()
     for localization in localization_list:
         company = Company.query.filter(Company.id == localization.name_base_id).first()
-        if company:
+        if company and company not in company_list:
             company_list.append(company)
     return company_list
 
