@@ -45,6 +45,10 @@ class Company(NameBase):
         return {**id, **company_name, **tag}
 
     def spread_company_name(self):
+        """
+        회사의 언어별 이름을 excel의 형태로 재구성하여 반환한다.
+        :return:
+        """
         spread_data = dict(company_ko='', company_en='', company_ja='')
         for language in Language.query.all():
             company_localization = Localization.query\
@@ -54,6 +58,10 @@ class Company(NameBase):
         return spread_data
 
     def spread_tag(self):
+        """
+        회사의 언어별 태그 정보를 excel의 형태로 재구성하여 반환한다.
+        :return:
+        """
         tag_list_lang = dict()
         spread_data = dict()
         for language in Language.query.all():
