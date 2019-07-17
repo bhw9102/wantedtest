@@ -34,6 +34,45 @@ class Company(NameBase):
     id = db.Column(db.Integer, db.ForeignKey('name_base.id'), primary_key=True)
     tag_list = relationship('Tag', secondary='attaching')
 
+    def spread(self):
+        """
+        회사 정보를 펼친 데이터로 재구성한다.
+        :return:
+        """
+        id = dict(id=self.id)
+        company_name = self.spread_company_name()
+        tag = self.spread_tag()
+        return {**id, **company_name, **tag}
+
+    def spread_company_name(self):
+        """
+        회사의 언어별 이름을 excel의 형태로 재구성하여 반환한다.
+        :return:
+        """
+        spread_data = dict(company_ko='', company_en='', company_ja='')
+        for language in Language.query.all():
+            company_localization = Localization.query\
+                .filter(Localization.name_base_id == self.id, Localization.language_id == language.id).first()
+            if company_localization:
+                spread_data['company_'+language.code] = company_localization.value
+        return spread_data
+
+    def spread_tag(self):
+        """
+        회사의 언어별 태그 정보를 excel의 형태로 재구성하여 반환한다.
+        :return:
+        """
+        tag_list_lang = dict()
+        spread_data = dict()
+        for language in Language.query.all():
+            tag_list_lang[language.code + '_list'] = list()
+            for tag in self.tag_list:
+                tag_localization = Localization.query\
+                    .filter(Localization.name_base_id == tag.id, Localization.language_id == language.id).first()
+                tag_list_lang[language.code + '_list'].append(tag_localization.value)
+            spread_data['tag_'+language.code] = '|'.join(tag_list_lang[language.code + '_list'])
+        return spread_data
+
 
 class Tag(NameBase):
     """
@@ -53,8 +92,8 @@ class Attaching(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'))
-    company = relationship(Company, backref=backref('attaching', cascade='all, delete-orphan'))
-    tag = relationship(Tag, backref=backref('attaching', cascade='all, delete-orphan'))
+    company = relationship(Company, backref=backref('attached_list', cascade='all, delete-orphan'))
+    tag = relationship(Tag, backref=backref('attached_list', cascade='all, delete-orphan'))
 
 
 class Localization(db.Model):
@@ -66,7 +105,7 @@ class Localization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_base_id = db.Column(db.Integer, db.ForeignKey('name_base.id'))
     language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
-    name_base = relationship(NameBase, backref=backref('localization', cascade='all, delete-orphan'))
-    language = relationship(Language, backref=backref('localization', cascade='all, delete-orphan'))
+    name_base = relationship(NameBase, backref=backref('localizations', cascade='all, delete-orphan'))
+    language = relationship(Language, backref=backref('localizations', cascade='all, delete-orphan'))
     value = db.Column(db.String(40), nullable=False)
 
