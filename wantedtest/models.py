@@ -106,8 +106,8 @@ class Attaching(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'))
-    company = relationship(Company, backref=backref('attaching', cascade='all, delete-orphan'))
-    tag = relationship(Tag, backref=backref('attaching', cascade='all, delete-orphan'))
+    company = relationship(Company, backref=backref('attached_list', cascade='all, delete-orphan'))
+    tag = relationship(Tag, backref=backref('attached_list', cascade='all, delete-orphan'))
 
 
 class Localization(db.Model):
